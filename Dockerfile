@@ -1,9 +1,14 @@
+# Usa una imagen base de golang para la construcción
 FROM golang:1.22-bullseye as permset
 WORKDIR /src
-RUN git clone https://github.com/networkconcern/permset.git /src && \
+
+# Configurar el token como una variable de entorno para usar en el comando git clone
+ARG GH_TOKEN
+RUN git clone https://$GH_TOKEN:x-oauth-basic@github.com/networkconcern/permset.git /src && \
     mkdir -p /out && \
     go build -ldflags "-X main.chownDir=/unifi" -o /out/permset
 
+# Usa una imagen base de Ubuntu para la etapa final
 FROM ubuntu:20.04
 
 LABEL maintainer="network Concern <synology@nnetworkconcern.com>"
