@@ -6,7 +6,7 @@ set -e
 # Retry 5 times with a wait of 10 seconds between each retry
 tryfail() {
     for i in $(seq 1 5);
-        do [ $i -gt 1 ] && sleep 10; $* && s=0 && break || s=$?; done;
+        do [ $i -gt 1 ] && sleep 35; $* && s=0 && break || s=$?; done;
     (exit $s)
 }
 
