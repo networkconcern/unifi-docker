@@ -2,7 +2,7 @@ language: bash
 dist: bionic
 env:
  global:
-  - DOCKER_REPO=jacobalberty/unifi
+  - DOCKER_REPO=networkconcern/unifi
 services:
  - docker
 before_install:
