@@ -51,6 +51,8 @@ jobs:
         with:
           context: .
           load: true
+          build-args: |
+            GH_TOKEN=${{ secrets.GH_TOKEN }}
           tags: ${{ env.TEST_TAG }}
       - name: Test image
         run: |
@@ -69,6 +71,8 @@ jobs:
           load: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            GH_TOKEN=${{ secrets.GH_TOKEN }}
           tags: ${{ steps.prep.outputs.tags }}
           labels: |
             org.opencontainers.image.title=${{ github.event.repository.name }}
