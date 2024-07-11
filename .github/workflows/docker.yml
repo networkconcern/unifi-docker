@@ -79,8 +79,6 @@ jobs:
           push: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            GH_TOKEN=${{ secrets.GH_TOKEN }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.tags }} 
       - name: Image digest
