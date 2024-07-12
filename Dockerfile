@@ -1,4 +1,4 @@
-# Usa una imagen base de golang para la construcción
+# Use imagen base of golang
 FROM golang:1.22-bullseye as permset
 WORKDIR /src
 
@@ -85,11 +85,17 @@ WORKDIR /unifi
 
 HEALTHCHECK --start-period=5m CMD /usr/local/bin/docker-healthcheck.sh || exit 1
 
+# Cambiar a usuario no root
+USER unifi
+
 # execute controller using JSVC like original debian package does
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 CMD ["unifi"]
 
+# execute the controller directly without using the service
+#ENTRYPOINT ["/usr/bin/java", "-Xmx${JVM_MAX_HEAP_SIZE}", "-jar", "/usr/lib/unifi/lib/ace.jar"]
+#CMD ["start"]
 # execute the conroller directly without using the service
 #ENTRYPOINT ["/usr/bin/java", "-Xmx${JVM_MAX_HEAP_SIZE}", "-jar", "/usr/lib/unifi/lib/ace.jar"]
   # See issue #12 on github: probably want to consider how JSVC handled creating multiple processes, issuing the -stop instraction, etc. Not sure if the above ace.jar class gracefully handles TERM signals.
