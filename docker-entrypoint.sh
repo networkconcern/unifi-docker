@@ -34,6 +34,7 @@ trap 'kill ${!}; exit_handler' SIGHUP SIGINT SIGQUIT SIGTERM
 
 [ "x${JAVA_HOME}" != "x" ] || set_java_home
 
+
 # vars similar to those found in unifi.init
 MONGOPORT=27117
 
@@ -51,6 +52,7 @@ JVM_MAX_HEAP_SIZE=${JVM_MAX_HEAP_SIZE:-1024M}
 #UNIFI_JVM_EXTRA_OPTS=
 #ENABLE_UNIFI=yes
 
+
 MONGOLOCK="${DATAPATH}/db/mongod.lock"
 JVM_EXTRA_OPTS="${JVM_EXTRA_OPTS} --add-opens=java.base/java.time=ALL-UNNAMED -Dunifi.datadir=${DATADIR} -Dunifi.logdir=${LOGDIR} -Dunifi.rundir=${RUNDIR}"
 PIDFILE=/var/run/unifi/unifi.pid
@@ -66,6 +68,7 @@ fi
 if [ ! -z "${JVM_MAX_THREAD_STACK_SIZE}" ]; then
   JVM_EXTRA_OPTS="${JVM_EXTRA_OPTS} -Xss${JVM_MAX_THREAD_STACK_SIZE}"
 fi
+
 
 JVM_OPTS="${JVM_EXTRA_OPTS}
   -Djava.awt.headless=true
