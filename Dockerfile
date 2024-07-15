@@ -1,3 +1,4 @@
+# Usa una imagen base de golang para la construcción
 FROM golang:1.22-bullseye as permset
 WORKDIR /src
 
@@ -7,16 +8,12 @@ RUN git clone https://$GH_TOKEN:x-oauth-basic@github.com/networkconcern/permset.
     mkdir -p /out && \
     go build -ldflags "-X main.chownDir=/unifi" -o /out/permset
 
-#RUN git clone https://github.com/networkconcern/permset.git /src && \
-#    mkdir -p /out && \
-#    go build -ldflags "-X main.chownDir=/unifi" -o /out/permset
-
+# Usa una imagen base de Ubuntu para la etapa final
 FROM ubuntu:20.04
 
-LABEL maintainer="networkconcern <synology@networkconcern.com.com>"
+LABEL maintainer="network Concern <synology@nnetworkconcern.com>"
 
 ARG DEBIAN_FRONTEND=noninteractive
-
 ARG PKGURL=https://dl.ui.com/unifi/8.2.93/unifi_sysvinit_all.deb
 
 ENV BASEDIR=/usr/lib/unifi \
@@ -42,7 +39,7 @@ RUN groupadd -r unifi && useradd -r -g unifi unifi
 # Install gosu
 # https://github.com/tianon/gosu/blob/master/INSTALL.md
 # This should be integrated with the main run because it duplicates a lot of the steps there
-# but for now while shoehorning gosu in it is seperate
+# but for now while shoehorning gosu in it is separate
 RUN set -eux; \
 	apt-get update; \
 	apt-get install -y gosu; \
@@ -98,7 +95,7 @@ ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 CMD ["unifi"]
 
-# execute the conroller directly without using the service
+# execute the controller directly without using the service
 #ENTRYPOINT ["/usr/bin/java", "-Xmx${JVM_MAX_HEAP_SIZE}", "-jar", "/usr/lib/unifi/lib/ace.jar"]
-  # See issue #12 on github: probably want to consider how JSVC handled creating multiple processes, issuing the -stop instraction, etc. Not sure if the above ace.jar class gracefully handles TERM signals.
+# See issue #12 on github: probably want to consider how JSVC handled creating multiple processes, issuing the -stop instraction, etc. Not sure if the above ace.jar class gracefully handles TERM signals.
 #CMD ["start"]
