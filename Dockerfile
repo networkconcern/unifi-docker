@@ -1,6 +1,6 @@
 FROM golang:1.22-bullseye as permset
 WORKDIR /src
-RUN git clone https://github.com/jacobalberty/permset.git /src && \
+RUN git clone https://github.com/networkconcern/permset.git /src && \
     mkdir -p /out && \
     go build -ldflags "-X main.chownDir=/unifi" -o /out/permset
 
