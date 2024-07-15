@@ -1,8 +1,15 @@
 FROM golang:1.22-bullseye as permset
 WORKDIR /src
-RUN git clone https://github.com/networkconcern/permset.git /src && \
+
+# Configurar el token como una variable de entorno para usar en el comando git clone
+ARG GH_TOKEN
+RUN git clone https://$GH_TOKEN:x-oauth-basic@github.com/networkconcern/permset.git /src && \
     mkdir -p /out && \
     go build -ldflags "-X main.chownDir=/unifi" -o /out/permset
+
+#RUN git clone https://github.com/networkconcern/permset.git /src && \
+#    mkdir -p /out && \
+#    go build -ldflags "-X main.chownDir=/unifi" -o /out/permset
 
 FROM ubuntu:20.04
 
@@ -28,6 +35,9 @@ ENV BASEDIR=/usr/lib/unifi \
     RUNAS_UID0=true \
     UNIFI_GID=999 \
     UNIFI_UID=999
+
+# Crear un usuario no root y grupo
+RUN groupadd -r unifi && useradd -r -g unifi unifi
 
 # Install gosu
 # https://github.com/tianon/gosu/blob/master/INSTALL.md
@@ -79,6 +89,9 @@ EXPOSE 6789/tcp 8080/tcp 8443/tcp 8880/tcp 8843/tcp 3478/udp 10001/udp
 WORKDIR /unifi
 
 HEALTHCHECK --start-period=5m CMD /usr/local/bin/docker-healthcheck.sh || exit 1
+
+# Ejecutar como usuario no root
+USER unifi
 
 # execute controller using JSVC like original debian package does
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
