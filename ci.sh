@@ -16,16 +16,19 @@ if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     --progress plain \
     --platform linux/arm/v7,linux/arm64/v8,linux/amd64 \
     .
-   docker build -t unifi:latest .
-    docker run -d -p 8443:8443 -p 8080:8080 --user $(id -u):$(id -g) -e PKGURL=<URL> --name unifi unifi:latest
-    sleep 10
-    docker ps | grep -q unifi || (docker logs unifi && exit 1)
-    curl --connect-timeout 5 --max-time 10 --retry 5 --retry-delay 0 --retry-max-time 60 -kILs --fail http://127.0.0.1:8080 || exit 1
-fi
 
-echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin && /dev/null
+  docker build -t unifi:latest .
+
+  docker run -d -p 8443:8443 -p 8080:8080 -e PKGURL --name unifi unifi:latest
+  docker ps | grep -q unifi
+  docker logs unifi
+  sleep 10 && curl --connect-timeout 5 --max-time 10 --retry 5 --retry-delay 0 --retry-max-time 60 -kILs --fail http://127.0.0.1:8080 || exit 1
+  exit $?
+fi
+echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin &> /dev/null
 docker buildx build \
-    --progress plain \
-    --platform linux/arm/v7,linux/arm64/v8,linux/amd64 \
-    $(getTags) \
-    --push
+  --progress plain \
+  --platform linux/arm/v7,linux/arm64/v8,linux/amd64 \
+  $(getTags) \
+  --push \
+  .
