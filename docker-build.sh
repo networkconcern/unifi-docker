@@ -6,7 +6,7 @@ set -e
 # Retry 5 times with a wait of 10 seconds between each retry
 tryfail() {
     for i in $(seq 1 5);
-        do [ $i -gt 1 ] && sleep 35; $* && s=0 && break || s=$?; done;
+        do [ $i -gt 1 ] && sleep 10; $* && s=0 && break || s=$?; done;
     (exit $s)
 }
 
@@ -46,12 +46,6 @@ tryfail apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 06E85760C0A
 if [ -d "/usr/local/docker/pre_build/$(dpkg --print-architecture)" ]; then
     find "/usr/local/docker/pre_build/$(dpkg --print-architecture)" -type f -exec '{}' \;
 fi
-
-# Fix: Installing specific versions of MongoDB from the official MongoDB repo
-echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4 multiverse" | tee /etc/apt/sources.list.d/mongodb-org-4.4.list
-tryfail apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 656408E390CFB1F5
-apt-get update
-apt-get install -y mongodb-org-server=4.4.6 mongodb-org-shell=4.4.6 mongodb-org-mongos=4.4.6 mongodb-org-tools=4.4.6
 
 curl -L -o ./unifi.deb "${1}"
 apt -qy install ./unifi.deb
