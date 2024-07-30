@@ -121,9 +121,7 @@ For Unifi-in-Docker, this uses the most recent stable version.
 
 | Tag                                                                                       | Description                                     | Changelog                                                                                                                       |
 |-------------------------------------------------------------------------------------------|-------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
-| [`latest` `v8.3.32`](https://github.com/networkconcern/unifi-docker/blob/master/Dockerfile) | Current Stable: Version 8.3.32 as of 2024-05-31 | [Change Log 8.3.32](https://community.ui.com/releases/UniFi-Network-Application-8-3-32/fce86dc6-897a-4944-9c53-1eec7e37e738)    |
 | [`latest` `v8.2.93`](https://github.com/networkconcern/unifi-docker/blob/master/Dockerfile) | Current Stable: Version 8.2.93 as of 2024-05-31 | [Change Log 8.2.93](https://community.ui.com/releases/UniFi-Network-Application-8-2-93/fce86dc6-897a-4944-9c53-1eec7e37e738)    |
-
 
 
 ### multiarch
