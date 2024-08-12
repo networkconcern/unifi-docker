@@ -77,7 +77,7 @@ So any major changes should apply cleanly against the `beta` branch.
 Using the Beta build is pretty easy:
 just substitute the correct URL from the Unifi site
 for the `PKGURL` parameter,
-and use `jacobalberty/unifi:beta` for the image
+and use `networkconcern/unifi:beta` for the image
 like this:
 
 ```bash
@@ -88,15 +88,15 @@ docker run -d --init \
    -v ~/unifi:/unifi \
    --name unifi \
    -e PKGURL=https://dl.ubnt.com/unifi/5.6.30/unifi_sysvinit_all.deb \
-   jacobalberty/unifi:beta
+   networkconcern/unifi:beta
 ```
 
 ### Running the Beta Using `docker-compose.yml` 
 
-In the containers service definition of the `docker-compose.yml` file, replace `image: jacobalberty/unifi` with the following:
+In the containers service definition of the `docker-compose.yml` file, replace `image: networkconcern/unifi` with the following:
 
 ```shell
-        image: jacobalberty/unifi:beta
+        image: networkconcern/unifi:beta
          environment:
           PKGURL: https://dl.ubnt.com/unifi/5.6.40/unifi_sysvinit_all.deb
 ```
