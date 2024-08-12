@@ -9,9 +9,9 @@ on:
       - 'v*.*.*'
 
 env:
-  TEST_TAG: networkconcern/unifi:test
-  PKGURL: https://dl.ui.com/unifi/8.3.32/unifi_sysvinit_all.deb
-    
+  TEST_TAG: jacobalberty/unifi:test
+  PKGURL: https://dl.ui.com/unifi/6.5.55/unifi_sysvinit_all.deb
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,12 +29,12 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GH_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Login to DockerHub
         uses: docker/login-action@v2 
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and export to Docker
         uses: docker/build-push-action@v4
         with:
@@ -60,7 +60,7 @@ jobs:
             type=semver,pattern=v{{major}}.{{minor}}
             type=ref,event=branch
           images: |
-            networkconcern/unifi
+            jacobalberty/unifi
             ghcr.io/${{ github.repository }}
       - name: Build container image
         uses: docker/build-push-action@v4
