@@ -7,7 +7,7 @@ on:
 env:
   TEST_TAG: networkconcern/unifi:test
   PKGURL: https://dl.ui.com/unifi/6.5.55/unifi_sysvinit_all.deb
-
+  
 jobs:
   build:
     runs-on: ubuntu-latest
