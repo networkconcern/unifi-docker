@@ -7,9 +7,10 @@ on:
     branches:
       - master
 
+# UniFi Controller version - update UNIFI_VERSION to upgrade
 env:
-  TEST_TAG: networkconcern/unifi:test
-  PKGURL: https://dl.ui.com/unifi/10.3.58/unifi_sysvinit_all.deb
+  UNIFI_VERSION: "10.3.58"
+  TEST_TAG: ghcr.io/${{ github.repository_owner }}/unifi:test
 
 jobs:
   build:
@@ -54,6 +55,7 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
           echo "created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+          echo "pkgurl=https://dl.ui.com/unifi/${{ env.UNIFI_VERSION }}/unifi_sysvinit_all.deb" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -74,16 +76,19 @@ jobs:
           context: .
           load: true
           tags: ${{ env.TEST_TAG }}
+          build-args: |
+            PKGURL=${{ steps.prep.outputs.pkgurl }}
 
       - name: Test image
         run: |
-          export PKGURL=${{ env.PKGURL }} &&
-          docker run -d --env PKGURL --rm --name unifitest ${{ env.TEST_TAG }} &&
-          sleep 35 &&
+          docker run -d --rm --name unifitest ${{ env.TEST_TAG }}
+          sleep 35
           for i in $(seq 1 10); do
-            [ $(docker inspect --format='{{json .State.Health.Status}}' unifitest) == \"healthy\" ] && break || sleep 35
-          done &&
-          [ $(docker inspect --format='{{json .State.Health.Status}}' unifitest) == \"healthy\" ] &&
+            STATUS=$(docker inspect --format='{{json .State.Health.Status}}' unifitest 2>/dev/null || echo '"unknown"')
+            [ "$STATUS" = '"healthy"' ] && break || sleep 35
+          done
+          STATUS=$(docker inspect --format='{{json .State.Health.Status}}' unifitest)
+          [ "$STATUS" = '"healthy"' ] || (docker logs unifitest && exit 1)
           docker stop unifitest
 
       - name: Build and push container image
@@ -96,6 +101,8 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: ${{ steps.prep.outputs.tags }}
+          build-args: |
+            PKGURL=${{ steps.prep.outputs.pkgurl }}
           labels: |
             org.opencontainers.image.title=${{ github.event.repository.name }}
             org.opencontainers.image.description=${{ github.event.repository.description }}
