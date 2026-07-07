@@ -9,7 +9,7 @@ on:
 
 # UniFi Controller version - update UNIFI_VERSION to upgrade
 env:
-  UNIFI_VERSION: "10.3.58"
+  UNIFI_VERSION: "10.4.57"
   TEST_TAG: ghcr.io/${{ github.repository_owner }}/unifi:test
 
 jobs:
