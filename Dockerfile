@@ -11,7 +11,7 @@ LABEL maintainer="Network Concern <synology@networkconcern.com>"
 ARG DEBIAN_FRONTEND=noninteractive
 
 # UniFi package URL - update this to upgrade the controller version
-ARG PKGURL=https://dl.ui.com/unifi/10.3.58/unifi_sysvinit_all.deb
+ARG PKGURL=https://dl.ui.com/unifi/10.6.106/unifi_sysvinit_all.deb
 
 ENV BASEDIR=/usr/lib/unifi \
     DATADIR=/unifi/data \
