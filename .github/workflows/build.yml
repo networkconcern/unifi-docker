@@ -7,9 +7,9 @@ on:
     branches:
       - master
 
-# UniFi Controller version - update UNIFI_VERSION to upgrade
+# UniFi Controller version is read from the UNIFI_VERSION file at the repo root.
+# To upgrade: edit that file, commit, and push.
 env:
-  UNIFI_VERSION: "10.6.106"
   TEST_TAG: ghcr.io/${{ github.repository_owner }}/unifi:test
 
 jobs:
@@ -25,16 +25,24 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update README version
+      - name: Read UniFi version
+        id: version
+        run: echo "value=$(tr -d '[:space:]' < UNIFI_VERSION)" >> "$GITHUB_OUTPUT"
+
+      - name: Update README and Dockerfile
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        env:
+          VER: ${{ steps.version.outputs.value }}
         run: |
           # Update the version table in README.md
-          sed -i "s/| `latest` | \*\*v[0-9]*\.[0-9]*\.[0-9]*\*\* /| `latest` | **v${{ env.UNIFI_VERSION }}** /" README.md
-          sed -i "s/| `master` | \*\*v[0-9]*\.[0-9]*\.[0-9]*\*\* /| `master` | **v${{ env.UNIFI_VERSION }}** /" README.md
+          sed -i "s/| \`latest\` | \*\*v[0-9]*\.[0-9]*\.[0-9]*\*\* /| \`latest\` | **v${VER}** /" README.md
+          sed -i "s/| \`master\` | \*\*v[0-9]*\.[0-9]*\.[0-9]*\*\* /| \`master\` | **v${VER}** /" README.md
           sed -i "s/(updated [0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\})/(updated $(date +%Y-%m-%d))/" README.md
+          # Keep the Dockerfile's default PKGURL in sync too
+          sed -i "s#^ARG PKGURL=https://dl.ui.com/unifi/.*/unifi_sysvinit_all.deb#ARG PKGURL=https://dl.ui.com/unifi/${VER}/unifi_sysvinit_all.deb#" Dockerfile
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git diff --quiet README.md || git commit -am "chore: auto-update README to UniFi v${{ env.UNIFI_VERSION }}"
+          git diff --quiet README.md Dockerfile || git commit -am "chore: auto-update README/Dockerfile to UniFi v${VER}"
           git push
 
       - name: Prepare
@@ -69,7 +77,7 @@ jobs:
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "tags=${TAGS}" >> $GITHUB_OUTPUT
           echo "created=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
-          echo "pkgurl=https://dl.ui.com/unifi/${{ env.UNIFI_VERSION }}/unifi_sysvinit_all.deb" >> $GITHUB_OUTPUT
+          echo "pkgurl=https://dl.ui.com/unifi/${{ steps.version.outputs.value }}/unifi_sysvinit_all.deb" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
