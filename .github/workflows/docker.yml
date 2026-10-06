@@ -12,7 +12,7 @@ on:
 
 # UniFi Controller version - update UNIFI_VERSION to upgrade
 env:
-  UNIFI_VERSION: "10.3.58"
+  UNIFI_VERSION: "10.6.106"
   TEST_TAG: networkconcern/unifi:test
 
 jobs:
