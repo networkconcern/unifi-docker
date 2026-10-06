@@ -17,7 +17,7 @@ Tested on: **Ubuntu, Debian, macOS, Windows, and Synology NAS (arm64/amd64).**
 | `latest` | **v10.3.58** | Current stable release (updated 2026-10-06) |
 | `master` | **v10.3.58** | Same as latest, built from master branch |
 
-> **To upgrade:** simply update `UNIFI_VERSION` in `build.yml` to the new version and push. The CI pipeline rebuilds and publishes automatically.
+> **To upgrade:** simply put the new version number in the `UNIFI_VERSION` file at the root of the repo and push. The CI pipeline rebuilds and publishes automatically.
 
 ---
 
@@ -163,9 +163,9 @@ For your UniFi access points and devices to find the controller running in Docke
 Place your certificates in the volume mapped to `/unifi/cert`. They must be named:
 
 ```
-cert.pem       # The certificate
-privkey.pem    # Private key
-chain.pem      # Full certificate chain
+cert.pem      # The certificate
+privkey.pem   # Private key
+chain.pem     # Full certificate chain
 ```
 
 If your files have different names, use the environment variables:
@@ -205,9 +205,10 @@ Both `linux/amd64` and `linux/arm64` are supported, making this image compatible
 This repository uses GitHub Actions to automatically build and publish the Docker image to both Docker Hub and GitHub Container Registry on every push to `master`.
 
 To update the UniFi Controller version:
-1. Edit `.github/workflows/build.yml`
-2. Change `UNIFI_VERSION: "10.3.58"` to the new version
-3. Commit and push — the pipeline does the rest automatically
+1. Edit the `UNIFI_VERSION` file at the root of the repo and replace its contents with the new version number (e.g. `10.6.106`)
+2. Commit and push to `master`
+
+That's the only manual step. The pipeline reads the version from that one file, builds and publishes both images, and updates this README (table and date) and the Dockerfile automatically — nothing else needs to be touched by hand.
 
 ---
 

@@ -10,9 +10,8 @@ on:
     tags:
       - 'v*.*.*'
 
-# UniFi Controller version - update UNIFI_VERSION to upgrade
+# UniFi Controller version is read from the UNIFI_VERSION file at the repo root.
 env:
-  UNIFI_VERSION: "10.6.106"
   TEST_TAG: networkconcern/unifi:test
 
 jobs:
@@ -25,10 +24,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Read UniFi version
+        id: version
+        run: echo "value=$(tr -d '[:space:]' < UNIFI_VERSION)" >> "$GITHUB_OUTPUT"
+
       - name: Prepare
         id: prep
         run: |
-          echo "pkgurl=https://dl.ui.com/unifi/${{ env.UNIFI_VERSION }}/unifi_sysvinit_all.deb" >> $GITHUB_OUTPUT
+          echo "pkgurl=https://dl.ui.com/unifi/${{ steps.version.outputs.value }}/unifi_sysvinit_all.deb" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
