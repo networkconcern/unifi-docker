@@ -14,8 +14,8 @@ Tested on: **Ubuntu, Debian, macOS, Windows, and Synology NAS (arm64/amd64).**
 
 | Tag | Version | Description |
 |-----|---------|-------------|
-| `latest` | **v10.6.106** | Current stable release (updated 2026-10-06) |
-| `master` | **v10.6.106** | Same as latest, built from master branch |
+| `latest` | **v10.6.109** | Current stable release (updated 2026-11-19) |
+| `master` | **v10.6.109** | Same as latest, built from master branch |
 
 > **To upgrade:** simply put the new version number in the `UNIFI_VERSION` file at the root of the repo and push. The CI pipeline rebuilds and publishes automatically.
 
