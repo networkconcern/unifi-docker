@@ -14,6 +14,10 @@ on:
 env:
   TEST_TAG: networkconcern/unifi:test
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,10 +32,29 @@ jobs:
         id: version
         run: echo "value=$(tr -d '[:space:]' < UNIFI_VERSION)" >> "$GITHUB_OUTPUT"
 
+      - name: Validate UniFi version
+        run: |
+          VER="${{ steps.version.outputs.value }}"
+          if ! [[ "$VER" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::UNIFI_VERSION must look like 10.6.109 (found: $VER)"
+            exit 1
+          fi
+          URL="https://dl.ui.com/unifi/${VER}/unifi_sysvinit_all.deb"
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" -I "$URL" || true)
+          echo "HTTP ${CODE} for ${URL}"
+          if [ "$CODE" = "404" ]; then
+            echo "::error::UniFi package not found for version ${VER}. Check the UNIFI_VERSION file."
+            exit 1
+          fi
+
       - name: Prepare
         id: prep
         run: |
           echo "pkgurl=https://dl.ui.com/unifi/${{ steps.version.outputs.value }}/unifi_sysvinit_all.deb" >> $GITHUB_OUTPUT
+          VER="${{ steps.version.outputs.value }}"
+          echo "full=${VER}" >> $GITHUB_OUTPUT
+          echo "minor=${VER%.*}" >> $GITHUB_OUTPUT
+          echo "major=${VER%%.*}" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -77,6 +100,9 @@ jobs:
             type=semver,pattern=v{{version}}
             type=semver,pattern=v{{major}}
             type=semver,pattern=v{{major}}.{{minor}}
+            type=raw,value=v${{ steps.prep.outputs.full }},enable={{is_default_branch}}
+            type=raw,value=v${{ steps.prep.outputs.minor }},enable={{is_default_branch}}
+            type=raw,value=v${{ steps.prep.outputs.major }},enable={{is_default_branch}}
             type=ref,event=branch
           images: |
             networkconcern/unifi
