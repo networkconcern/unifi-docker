@@ -124,3 +124,13 @@ jobs:
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
+
+      - name: Update Docker Hub description from README
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: networkconcern/unifi
+          short-description: UniFi Network Controller in Docker (amd64/arm64), auto-built from the UNIFI_VERSION file
+          readme-filepath: ./README.md
