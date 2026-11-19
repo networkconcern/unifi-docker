@@ -12,6 +12,10 @@ on:
 env:
   TEST_TAG: ghcr.io/${{ github.repository_owner }}/unifi:test
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,6 +32,21 @@ jobs:
       - name: Read UniFi version
         id: version
         run: echo "value=$(tr -d '[:space:]' < UNIFI_VERSION)" >> "$GITHUB_OUTPUT"
+
+      - name: Validate UniFi version
+        run: |
+          VER="${{ steps.version.outputs.value }}"
+          if ! [[ "$VER" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::UNIFI_VERSION must look like 10.6.109 (found: $VER)"
+            exit 1
+          fi
+          URL="https://dl.ui.com/unifi/${VER}/unifi_sysvinit_all.deb"
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" -I "$URL" || true)
+          echo "HTTP ${CODE} for ${URL}"
+          if [ "$CODE" = "404" ]; then
+            echo "::error::UniFi package not found for version ${VER}. Check the UNIFI_VERSION file."
+            exit 1
+          fi
 
       - name: Update README and Dockerfile
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
@@ -72,6 +91,11 @@ jobs:
             TAGS="$TAGS,${DOCKER_IMAGE}:${MINOR},${DOCKER_IMAGE}:${MAJOR}"
           elif [ "${{ github.event_name }}" = "push" ]; then
             TAGS="$TAGS,${DOCKER_IMAGE}:sha-${GITHUB_SHA::8}"
+          fi
+
+          if [ "${{ github.event_name }}" = "push" ] && [ "$GITHUB_REF" = "refs/heads/${{ github.event.repository.default_branch }}" ]; then
+            UV="${{ steps.version.outputs.value }}"
+            TAGS="$TAGS,${DOCKER_IMAGE}:v${UV},${DOCKER_IMAGE}:v${UV%.*},${DOCKER_IMAGE}:v${UV%%.*}"
           fi
 
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
@@ -137,3 +161,36 @@ jobs:
 
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
+
+      - name: Create GitHub Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VER: ${{ steps.version.outputs.value }}
+        run: |
+          TAG="v${VER}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release ${TAG} already exists - nothing to do"
+            exit 0
+          fi
+          F='```'
+          {
+            echo "## UniFi Controller ${TAG}"
+            echo
+            echo "### What is new"
+            echo "- UniFi Network Application updated to **${VER}**"
+            echo "- Image built and published automatically from the UNIFI_VERSION file"
+            echo
+            echo "### Images"
+            echo "${F}"
+            echo "docker pull networkconcern/unifi:${TAG}"
+            echo "docker pull networkconcern/unifi:latest"
+            echo "docker pull ghcr.io/${{ github.repository_owner }}/unifi:${TAG}"
+            echo "docker pull ghcr.io/${{ github.repository_owner }}/unifi:latest"
+            echo "${F}"
+            echo
+            echo "### Architectures"
+            echo "- linux/amd64"
+            echo "- linux/arm64 (Synology NAS, Raspberry Pi 4/5)"
+          } > notes.md
+          gh release create "$TAG" --target "$(git rev-parse HEAD)" --title "UniFi Controller ${TAG}" --notes-file notes.md --latest
